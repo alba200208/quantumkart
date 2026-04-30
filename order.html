@@ -21,9 +21,7 @@
       border-radius: 10px;
     }
 
-    .back {
-      display: block;
-      margin: 20px auto;
+    button {
       padding: 10px;
       background: orange;
       border: none;
@@ -38,11 +36,13 @@
 
 <div id="ordersList"></div>
 
-<button class="back" onclick="goBack()">⬅ Back</button>
+<br>
+<button onclick="goBack()">⬅ Back</button>
 
 <script>
 
-let orders = JSON.parse(localStorage.getItem("orders")) || [];
+let user = localStorage.getItem("user");
+let orders = JSON.parse(localStorage.getItem(user + "_orders")) || [];
 
 const container = document.getElementById("ordersList");
 
@@ -54,7 +54,8 @@ if(orders.length === 0){
     let div = document.createElement("div");
     div.className = "order";
 
-    let html = "<strong>Order Time:</strong> " + order.time + "<br>";
+    let html = "<strong>Time:</strong> " + order.time + "<br>";
+    html += "<strong>Total:</strong> ₹" + order.total + "<br><br>";
 
     order.items.forEach(item => {
       html += item.name + " x " + item.qty + "<br>";
