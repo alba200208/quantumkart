@@ -105,7 +105,13 @@
 
 <script>
 
-let cart = [];
+// 👉 LOAD CART FROM STORAGE
+let cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+// 👉 SAVE FUNCTION
+function saveCart() {
+  localStorage.setItem("cart", JSON.stringify(cart));
+}
 
 function addToCart(name, price) {
   let item = cart.find(p => p.name === name);
@@ -116,6 +122,7 @@ function addToCart(name, price) {
     cart.push({name, price, qty:1});
   }
 
+  saveCart();
   displayCart();
 }
 
@@ -126,6 +133,7 @@ function changeQty(index, change) {
     cart.splice(index,1);
   }
 
+  saveCart();
   displayCart();
 }
 
@@ -161,8 +169,12 @@ function buyNow() {
 
   alert("Order placed 🎉");
   cart = [];
+  saveCart();
   displayCart();
 }
+
+// 👉 LOAD CART ON PAGE OPEN
+displayCart();
 
 </script>
 
