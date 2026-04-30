@@ -110,7 +110,6 @@
 
 <div class="container">
 
-  <!-- PRODUCTS -->
   <div class="products">
 
     <div class="card" data-name="tshirt">
@@ -136,7 +135,6 @@
 
   </div>
 
-  <!-- CART -->
   <div class="cart">
     <h2>🛒 Cart</h2>
     <ul id="cartList"></ul>
@@ -148,15 +146,12 @@
 
 <script>
 
-// LOAD CART
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
 
-// SAVE
 function saveCart() {
   localStorage.setItem("cart", JSON.stringify(cart));
 }
 
-// ADD
 function addToCart(name, price) {
   let item = cart.find(p => p.name === name);
 
@@ -170,7 +165,6 @@ function addToCart(name, price) {
   displayCart();
 }
 
-// CHANGE QTY
 function changeQty(index, change) {
   cart[index].qty += change;
 
@@ -182,7 +176,6 @@ function changeQty(index, change) {
   displayCart();
 }
 
-// DISPLAY
 function displayCart() {
   const list = document.getElementById("cartList");
   const total = document.getElementById("total");
@@ -207,30 +200,17 @@ function displayCart() {
   total.innerText = "Total: ₹" + sum;
 }
 
-// BUY
 function buyNow() {
   if(cart.length === 0){
     alert("Cart empty!");
     return;
   }
 
-  let orders = JSON.parse(localStorage.getItem("orders")) || [];
+  localStorage.setItem("checkoutCart", JSON.stringify(cart));
 
-  orders.push({
-    items: cart,
-    time: new Date().toLocaleString()
-  });
-
-  localStorage.setItem("orders", JSON.stringify(orders));
-
-  alert("Order placed 🎉");
-
-  cart = [];
-  saveCart();
-  displayCart();
+  window.location.href = "payment.html";
 }
 
-// SEARCH
 function searchProduct() {
   let input = document.getElementById("search").value.toLowerCase();
   let cards = document.querySelectorAll(".card");
@@ -246,12 +226,10 @@ function searchProduct() {
   });
 }
 
-// NAVIGATION
 function goOrders(){
   window.location.href = "order.html";
 }
 
-// INIT
 displayCart();
 
 </script>
