@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>QuantumKart</title>
+
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      background: #f1f3f6;
+    }
+
+    header {
+      background: linear-gradient(90deg, #232f3e, #131a22);
+      color: white;
+      padding: 15px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    header button {
+      background: #ff9900;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .container {
+      display: flex;
+      padding: 20px;
+      gap: 25px;
+    }
+
+    .products {
+      flex: 2;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    .card {
+      background: white;
+      padding: 15px;
+      border-radius: 12px;
+      text-align: center;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+      transition: 0.3s;
+    }
+
+    .card:hover {
+      transform: translateY(-6px);
+    }
+
+    .card img {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+      border-radius: 10px;
+      margin-bottom: 10px;
+    }
+
+    button {
+      background: #ff9900;
+      border: none;
+      padding: 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .cart {
+      flex: 1;
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+    }
+
+    .buy {
+      width: 100%;
+      margin-top: 10px;
+      background: green;
+      color: white;
+    }
+
+    .qty-btn {
+      margin: 0 5px;
+      padding: 3px 8px;
+      background: #ddd;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <h2>🛒 QuantumKart</h2>
+    <button onclick="logout()">Logout</button>
+  </header>
+
+  <div class="container">
+
+    <!-- PRODUCTS -->
+    <div class="products">
+
+      <div class="card">
+        <img src="https://source.unsplash.com/300x300/?tshirt">
+        <h3>T-Shirt</h3>
+        <p>₹500</p>
+        <button onclick="addToCart('T-Shirt', 500)">Add to Cart</button>
+      </div>
+
+      <div class="card">
+        <img src="https://source.unsplash.com/300x300/?watch">
+        <h3>Watch</h3>
+        <p>₹1500</p>
+        <button onclick="addToCart('Watch', 1500)">Add to Cart</button>
+      </div>
+
+      <div class="card">
+        <img src="https://source.unsplash.com/300x300/?shoes">
+        <h3>Shoes</h3>
+        <p>₹2500</p>
+        <button onclick="addToCart('Shoes', 2500)">Add to Cart</button>
+      </div>
+
+    </div>
+
+    <!-- CART -->
+    <div class="cart">
+      <h2>🛒 Cart</h2>
+      <ul id="cartList"></ul>
+      <h3 id="totalPrice">Total: ₹0</h3>
+      <button class="buy" onclick="placeOrder()">Buy Now</button>
+    </div>
+
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { getFirestore, doc, setDoc, getDoc, updateDoc } 
+    from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDsp_BqZIw6TwGI0v7yzQiZ9lPatD5Dffs",
+      authDomain: "quantumkart-6d4e6.firebaseapp.com",
+      projectId: "quantumkart-6d4e6",
+      storageBucket: "quantumkart-6d4e6.firebasestorage.app",
+      messagingSenderId: "451553557342",
+      appId: "1:451553557342:web:937b96880cf4c4eb02adcf"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    let userId = null;
+
+    onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        window.location.href = "index.html";
+        return;
+      }
+      userId = user.uid;
+      loadCart();
+    });
+
+    window.addToCart = async function(name, price) {
+      const userRef = doc(db, "users", userId);
+      const snap = await getDoc(userRef);
+
+      let cart = snap.exists() ? snap.data().cart || [] : [];
+
+      let found = false;
+
+      cart = cart.map(item => {
+        if (item.name === name) {
+          found = true;
+          return { ...item, qty: (item.qty || 1) + 1 };
+        }
+        return item;
+      });
+
+      if (!found) {
+        cart.push({ name, price, qty: 1 });
+      }
+
+      await setDoc(userRef, { cart });
+      loadCart();
+    }
+
+    async function loadCart() {
+      const userRef = doc(db, "users", userId);
+      const snap = await getDoc(userRef);
+
+      let cart = snap.exists() ? snap.data().cart || [] : [];
+      displayCart(cart);
+    }
+
+    function displayCart(cart) {
+      const cartList = document.getElementById("cartList");
+      const totalPrice = document.getElementById("totalPrice");
+
+      cartList.innerHTML = "";
+      let total = 0;
+
+      cart.forEach((item, index) => {
+        const qty = item.qty || 1;
+        total += item.price * qty;
+
+        const li = document.createElement("li");
+        li.innerHTML = `
+          ${item.name} - ₹${item.price} × ${qty}
+          <span>
+            <button class="qty-btn" onclick="decreaseQty(${index})">-</button>
+            <button class="qty-btn" onclick="increaseQty(${index})">+</button>
+            <button onclick="removeItem(${index})">❌</button>
+          </span>
+        `;
+        cartList.appendChild(li);
+      });
+
+      totalPrice.innerText = "Total: ₹" + total;
+    }
+
+    window.increaseQty = async function(index) {
+      const userRef = doc(db, "users", userId);
+      const snap = await getDoc(userRef);
+      let cart = snap.data().cart || [];
+
+      cart[index].qty += 1;
+      await updateDoc(userRef, { cart });
+      loadCart();
+    }
+
+    window.decreaseQty = async function(index) {
+      const userRef = doc(db, "users", userId);
+      const snap = await getDoc(userRef);
+      let cart = snap.data().cart || [];
+
+      if (cart[index].qty > 1) {
+        cart[index].qty -= 1;
+      }
+
+      await updateDoc(userRef, { cart });
+      loadCart();
+    }
+
+    window.removeItem = async function(index) {
+      const userRef = doc(db, "users", userId);
+      const snap = await getDoc(userRef);
+      let cart = snap.data().cart || [];
+
+      cart.splice(index, 1);
+      await updateDoc(userRef, { cart });
+      loadCart();
+    }
+
+    window.placeOrder = async function() {
+      const userRef = doc(db, "users", userId);
+      const snap = await getDoc(userRef);
+
+      let cart = snap.data().cart || [];
+
+      if (cart.length === 0) {
+        alert("Cart empty!");
+        return;
+      }
+
+      let total = 0;
+      cart.forEach(item => total += item.price * item.qty);
+
+      await setDoc(doc(db, "orders", userId), {
+        items: cart,
+        total: total,
+        time: new Date()
+      });
+
+      await updateDoc(userRef, { cart: [] });
+
+      alert("Order placed 🎉");
+      loadCart();
+    }
+
+    window.logout = function() {
+      signOut(auth).then(() => {
+        window.location.href = "index.html";
+      });
+    }
+  </script>
+
+</body>
+</html>
