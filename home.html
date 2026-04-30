@@ -14,7 +14,19 @@
       background: #232f3e;
       color: white;
       padding: 15px;
-      text-align: center;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    header button {
+      margin-left: 10px;
+      padding: 8px 12px;
+      border: none;
+      cursor: pointer;
+      border-radius: 5px;
+      background: orange;
+      font-weight: bold;
     }
 
     .container {
@@ -86,6 +98,9 @@
 
 <header>
   <h2>🛒 QuantumKart</h2>
+  <div>
+    <button onclick="goOrders()">Orders</button>
+  </div>
 </header>
 
 <div class="container">
@@ -128,14 +143,15 @@
 
 <script>
 
-// LOAD SAVED CART
+// LOAD CART
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
 
-// SAVE FUNCTION
+// SAVE CART
 function saveCart() {
   localStorage.setItem("cart", JSON.stringify(cart));
 }
 
+// ADD TO CART
 function addToCart(name, price) {
   let item = cart.find(p => p.name === name);
 
@@ -149,6 +165,7 @@ function addToCart(name, price) {
   displayCart();
 }
 
+// CHANGE QTY
 function changeQty(index, change) {
   cart[index].qty += change;
 
@@ -160,6 +177,7 @@ function changeQty(index, change) {
   displayCart();
 }
 
+// DISPLAY CART
 function displayCart() {
   const list = document.getElementById("cartList");
   const total = document.getElementById("total");
@@ -184,16 +202,32 @@ function displayCart() {
   total.innerText = "Total: ₹" + sum;
 }
 
+// BUY NOW + SAVE ORDER
 function buyNow() {
   if(cart.length === 0){
     alert("Cart empty!");
     return;
   }
 
+  let orders = JSON.parse(localStorage.getItem("orders")) || [];
+
+  orders.push({
+    items: cart,
+    time: new Date().toLocaleString()
+  });
+
+  localStorage.setItem("orders", JSON.stringify(orders));
+
   alert("Order placed 🎉");
+
   cart = [];
   saveCart();
   displayCart();
+}
+
+// GO TO ORDERS PAGE
+function goOrders(){
+  window.location.href = "order.html";
 }
 
 // LOAD ON START
