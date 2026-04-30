@@ -1,20 +1,25 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>QuantumKart</title>
+  <title>Login</title>
 </head>
 
 <body style="display:flex;justify-content:center;align-items:center;height:100vh;font-family:sans-serif;">
 
-<div style="text-align:center;">
-  <h1>🛒 QuantumKart</h1>
-  <button onclick="go()">Enter</button>
-</div>
+<button onclick="login()">Login with Google</button>
 
-<script>
-function go(){
-  window.location.href = "login.html";
+<script type="module">
+
+import { loginWithGoogle } from "./firebase.js";
+
+function login(){
+  loginWithGoogle().then(() => {
+    window.location.href = "home.html";
+  });
 }
+
+window.login = login;
+
 </script>
 
 </body>
