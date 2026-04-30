@@ -42,12 +42,11 @@
 
 <div class="box">
   <h2>💳 Payment</h2>
-
   <p id="totalAmount"></p>
 
   <input type="text" placeholder="Card Number">
   <input type="text" placeholder="Name on Card">
-  <input type="text" placeholder="Expiry (MM/YY)">
+  <input type="text" placeholder="Expiry">
   <input type="text" placeholder="CVV">
 
   <button onclick="payNow()">Pay Now</button>
@@ -55,9 +54,10 @@
 
 <script>
 
+let user = localStorage.getItem("user");
 let cart = JSON.parse(localStorage.getItem("checkoutCart")) || [];
-let total = 0;
 
+let total = 0;
 cart.forEach(item => {
   total += item.price * item.qty;
 });
@@ -71,7 +71,7 @@ function payNow() {
     return;
   }
 
-  let orders = JSON.parse(localStorage.getItem("orders")) || [];
+  let orders = JSON.parse(localStorage.getItem(user + "_orders")) || [];
 
   orders.push({
     items: cart,
@@ -79,10 +79,10 @@ function payNow() {
     total: total
   });
 
-  localStorage.setItem("orders", JSON.stringify(orders));
+  localStorage.setItem(user + "_orders", JSON.stringify(orders));
 
   localStorage.removeItem("checkoutCart");
-  localStorage.removeItem("cart");
+  localStorage.removeItem(user + "_cart");
 
   alert("Payment Successful 🎉");
 
