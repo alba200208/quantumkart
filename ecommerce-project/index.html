@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Login Page</title>
+</head>
+<body>
+
+  <h2>Signup</h2>
+  <input type="email" id="email" placeholder="Enter email"><br><br>
+  <input type="password" id="password" placeholder="Enter password"><br><br>
+  <button onclick="signUp()">Sign Up</button>
+
+  <h2>Login</h2>
+  <button onclick="login()">Login</button>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } 
+    from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDsp_BqZIw6TwGI0v7yzQiZ9lPatD5Dffs",
+      authDomain: "quantumkart-6d4e6.firebaseapp.com",
+      projectId: "quantumkart-6d4e6",
+      storageBucket: "quantumkart-6d4e6.firebasestorage.app",
+      messagingSenderId: "451553557342",
+      appId: "1:451553557342:web:937b96880cf4c4eb02adcf"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    window.signUp = function () {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+
+      createUserWithEmailAndPassword(auth, email, password)
+        .then(() => alert("User Created!"))
+        .catch((err) => alert(err.message));
+    }
+
+    window.login = function () {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+
+      signInWithEmailAndPassword(auth, email, password)
+        .then(() => {
+          window.location.href = "home.html";
+        })
+        .catch((err) => alert(err.message));
+    }
+  </script>
+
+</body>
+</html>
