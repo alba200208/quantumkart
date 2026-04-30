@@ -105,6 +105,7 @@
 
   <div>
     <button onclick="goOrders()">Orders</button>
+    <button onclick="logout()">Logout</button>
   </div>
 </header>
 
@@ -146,12 +147,21 @@
 
 <script>
 
-let cart = JSON.parse(localStorage.getItem("cart")) || [];
-
-function saveCart() {
-  localStorage.setItem("cart", JSON.stringify(cart));
+// USER CHECK
+let user = localStorage.getItem("user");
+if(!user){
+  window.location.href = "login.html";
 }
 
+// LOAD CART
+let cart = JSON.parse(localStorage.getItem(user + "_cart")) || [];
+
+// SAVE
+function saveCart() {
+  localStorage.setItem(user + "_cart", JSON.stringify(cart));
+}
+
+// ADD
 function addToCart(name, price) {
   let item = cart.find(p => p.name === name);
 
@@ -165,6 +175,7 @@ function addToCart(name, price) {
   displayCart();
 }
 
+// CHANGE QTY
 function changeQty(index, change) {
   cart[index].qty += change;
 
@@ -176,6 +187,7 @@ function changeQty(index, change) {
   displayCart();
 }
 
+// DISPLAY
 function displayCart() {
   const list = document.getElementById("cartList");
   const total = document.getElementById("total");
@@ -200,6 +212,7 @@ function displayCart() {
   total.innerText = "Total: ₹" + sum;
 }
 
+// BUY
 function buyNow() {
   if(cart.length === 0){
     alert("Cart empty!");
@@ -211,6 +224,7 @@ function buyNow() {
   window.location.href = "payment.html";
 }
 
+// SEARCH
 function searchProduct() {
   let input = document.getElementById("search").value.toLowerCase();
   let cards = document.querySelectorAll(".card");
@@ -226,10 +240,17 @@ function searchProduct() {
   });
 }
 
+// NAV
 function goOrders(){
   window.location.href = "order.html";
 }
 
+function logout(){
+  localStorage.removeItem("user");
+  window.location.href = "login.html";
+}
+
+// INIT
 displayCart();
 
 </script>
