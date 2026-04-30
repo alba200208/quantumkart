@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>QuantumKart</title>
+
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 0;
+      background: #f1f3f6;
+    }
+
+    header {
+      background: #232f3e;
+      color: white;
+      padding: 15px;
+      text-align: center;
+    }
+
+    .container {
+      display: flex;
+      padding: 20px;
+      gap: 20px;
+    }
+
+    .products {
+      flex: 2;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    .card {
+      background: white;
+      padding: 15px;
+      border-radius: 10px;
+      text-align: center;
+    }
+
+    img {
+      width: 100%;
+      height: 150px;
+      object-fit: cover;
+      border-radius: 8px;
+    }
+
+    button {
+      margin-top: 10px;
+      padding: 8px;
+      background: orange;
+      border: none;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+
+    .cart {
+      flex: 1;
+      background: white;
+      padding: 15px;
+      border-radius: 10px;
+    }
+
+    .buy {
+      width: 100%;
+      background: green;
+      color: white;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <h2>🛒 QuantumKart</h2>
+</header>
+
+<div class="container">
+
+  <div class="products">
+
+    <div class="card">
+      <img src="https://source.unsplash.com/300x300/?tshirt">
+      <h3>T-Shirt</h3>
+      <p>₹500</p>
+      <button onclick="addToCart('T-Shirt',500)">Add to Cart</button>
+    </div>
+
+    <div class="card">
+      <img src="https://source.unsplash.com/300x300/?watch">
+      <h3>Watch</h3>
+      <p>₹1500</p>
+      <button onclick="addToCart('Watch',1500)">Add to Cart</button>
+    </div>
+
+    <div class="card">
+      <img src="https://source.unsplash.com/300x300/?shoes">
+      <h3>Shoes</h3>
+      <p>₹2500</p>
+      <button onclick="addToCart('Shoes',2500)">Add to Cart</button>
+    </div>
+
+  </div>
+
+  <div class="cart">
+    <h2>🛒 Cart</h2>
+    <ul id="cartList"></ul>
+    <h3 id="total">Total: ₹0</h3>
+    <button class="buy" onclick="buyNow()">Buy Now</button>
+  </div>
+
+</div>
+
+<script>
+
+let cart = [];
+
+function addToCart(name, price) {
+  cart.push({name, price});
+  displayCart();
+}
+
+function displayCart() {
+  const list = document.getElementById("cartList");
+  const total = document.getElementById("total");
+
+  list.innerHTML = "";
+  let sum = 0;
+
+  cart.forEach(item => {
+    sum += item.price;
+    const li = document.createElement("li");
+    li.innerText = item.name + " - ₹" + item.price;
+    list.appendChild(li);
+  });
+
+  total.innerText = "Total: ₹" + sum;
+}
+
+function buyNow() {
+  if(cart.length === 0){
+    alert("Cart empty!");
+    return;
+  }
+  alert("Order placed 🎉");
+  cart = [];
+  displayCart();
+}
+
+</script>
+
+</body>
+</html>
