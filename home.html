@@ -1,257 +1,37 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>QuantumKart</title>
-
-  <style>
-    body { font-family: sans-serif; margin:0; background:#f1f3f6; }
-
-    header {
-      background:#232f3e;
-      color:white;
-      padding:15px;
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-    }
-
-    header input {
-      padding:8px;
-      border-radius:5px;
-      border:none;
-    }
-
-    header button {
-      margin-left:10px;
-      padding:8px 12px;
-      border:none;
-      cursor:pointer;
-      border-radius:5px;
-      background:orange;
-      font-weight:bold;
-    }
-
-    .container {
-      display:flex;
-      padding:20px;
-      gap:20px;
-    }
-
-    .products {
-      flex:2;
-      display:grid;
-      grid-template-columns:repeat(3,1fr);
-      gap:20px;
-    }
-
-    .card {
-      background:white;
-      padding:15px;
-      border-radius:10px;
-      text-align:center;
-      transition:0.3s;
-    }
-
-    .card:hover {
-      transform:scale(1.05);
-    }
-
-    img {
-      width:100%;
-      height:180px;
-      object-fit:cover;
-      border-radius:10px;
-    }
-
-    button {
-      margin-top:10px;
-      padding:8px;
-      background:orange;
-      border:none;
-      cursor:pointer;
-      border-radius:5px;
-      font-weight:bold;
-    }
-
-    .cart {
-      flex:1;
-      background:white;
-      padding:15px;
-      border-radius:10px;
-    }
-
-    .qty-btn {
-      margin:0 5px;
-      padding:3px 8px;
-      background:#ddd;
-      border-radius:4px;
-    }
-
-    .buy {
-      width:100%;
-      background:green;
-      color:white;
-      margin-top:10px;
-    }
-  </style>
+  <title>QuantumKart Pro</title>
 </head>
 
 <body>
 
-<header>
-  <h2>🛒 QuantumKart</h2>
+<h2>🛒 QuantumKart (Pro)</h2>
 
-  <input type="text" id="search" placeholder="Search..." onkeyup="searchProduct()">
+<button onclick="logout()">Logout</button>
 
-  <div>
-    <button onclick="goOrders()">Orders</button>
-    <button onclick="logout()">Logout</button>
-  </div>
-</header>
+<div id="userInfo"></div>
 
-<div class="container">
+<script type="module">
 
-  <div class="products">
+import { auth, logoutUser } from "./firebase.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-    <div class="card" data-name="tshirt">
-      <img src="https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400">
-      <h3>T-Shirt</h3>
-      <p>₹500</p>
-      <button onclick="addToCart('T-Shirt',500)">Add to Cart</button>
-    </div>
-
-    <div class="card" data-name="watch">
-      <img src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400">
-      <h3>Watch</h3>
-      <p>₹1500</p>
-      <button onclick="addToCart('Watch',1500)">Add to Cart</button>
-    </div>
-
-    <div class="card" data-name="shoes">
-      <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400">
-      <h3>Shoes</h3>
-      <p>₹2500</p>
-      <button onclick="addToCart('Shoes',2500)">Add to Cart</button>
-    </div>
-
-  </div>
-
-  <div class="cart">
-    <h2>🛒 Cart</h2>
-    <ul id="cartList"></ul>
-    <h3 id="total">Total: ₹0</h3>
-    <button class="buy" onclick="buyNow()">Buy Now</button>
-  </div>
-
-</div>
-
-<script>
-
-// USER CHECK
-let user = localStorage.getItem("user");
-if(!user){
-  window.location.href = "login.html";
-}
-
-// LOAD CART
-let cart = JSON.parse(localStorage.getItem(user + "_cart")) || [];
-
-// SAVE
-function saveCart() {
-  localStorage.setItem(user + "_cart", JSON.stringify(cart));
-}
-
-// ADD
-function addToCart(name, price) {
-  let item = cart.find(p => p.name === name);
-
-  if(item){
-    item.qty++;
+onAuthStateChanged(auth, (user) => {
+  if(user){
+    document.getElementById("userInfo").innerText = "Logged in as: " + user.email;
   } else {
-    cart.push({name, price, qty:1});
+    window.location.href = "index.html";
   }
-
-  saveCart();
-  displayCart();
-}
-
-// CHANGE QTY
-function changeQty(index, change) {
-  cart[index].qty += change;
-
-  if(cart[index].qty <= 0){
-    cart.splice(index,1);
-  }
-
-  saveCart();
-  displayCart();
-}
-
-// DISPLAY
-function displayCart() {
-  const list = document.getElementById("cartList");
-  const total = document.getElementById("total");
-
-  list.innerHTML = "";
-  let sum = 0;
-
-  cart.forEach((item, index) => {
-    sum += item.price * item.qty;
-
-    const li = document.createElement("li");
-
-    li.innerHTML = `
-      ${item.name} - ₹${item.price} x ${item.qty}
-      <button class="qty-btn" onclick="changeQty(${index}, -1)">-</button>
-      <button class="qty-btn" onclick="changeQty(${index}, 1)">+</button>
-    `;
-
-    list.appendChild(li);
-  });
-
-  total.innerText = "Total: ₹" + sum;
-}
-
-// BUY
-function buyNow() {
-  if(cart.length === 0){
-    alert("Cart empty!");
-    return;
-  }
-
-  localStorage.setItem("checkoutCart", JSON.stringify(cart));
-
-  window.location.href = "payment.html";
-}
-
-// SEARCH
-function searchProduct() {
-  let input = document.getElementById("search").value.toLowerCase();
-  let cards = document.querySelectorAll(".card");
-
-  cards.forEach(card => {
-    let name = card.getAttribute("data-name");
-
-    if(name.includes(input)){
-      card.style.display = "block";
-    } else {
-      card.style.display = "none";
-    }
-  });
-}
-
-// NAV
-function goOrders(){
-  window.location.href = "order.html";
-}
+});
 
 function logout(){
-  localStorage.removeItem("user");
-  window.location.href = "login.html";
+  logoutUser().then(() => {
+    window.location.href = "index.html";
+  });
 }
 
-// INIT
-displayCart();
+window.logout = logout;
 
 </script>
 
