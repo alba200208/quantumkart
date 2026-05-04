@@ -2,60 +2,36 @@
 <html>
 <head>
   <title>My Orders</title>
-
-  <style>
-    body {
-      font-family: sans-serif;
-      background: #f1f3f6;
-      padding: 20px;
-    }
-
-    h1 {
-      text-align: center;
-    }
-
-    .order {
-      background: white;
-      padding: 15px;
-      margin: 15px 0;
-      border-radius: 10px;
-    }
-
-    button {
-      padding: 10px;
-      background: orange;
-      border: none;
-      cursor: pointer;
-    }
-  </style>
 </head>
 
-<body>
+<body style="font-family:sans-serif; padding:20px;">
 
 <h1>📦 My Orders</h1>
-
 <div id="ordersList"></div>
 
-<br>
-<button onclick="goBack()">⬅ Back</button>
+<button onclick="goBack()">Back</button>
 
 <script>
 
-let user = localStorage.getItem("user");
-let orders = JSON.parse(localStorage.getItem(user + "_orders")) || [];
+let user = JSON.parse(localStorage.getItem("checkoutCart")) || [];
+let email = "";
 
-const container = document.getElementById("ordersList");
+if(localStorage.length > 0){
+  email = Object.keys(localStorage).find(k => k.includes("@") && k.includes("_orders"));
+}
+
+let orders = JSON.parse(localStorage.getItem(email)) || [];
+
+let container = document.getElementById("ordersList");
 
 if(orders.length === 0){
-  container.innerHTML = "<p>No orders yet</p>";
+  container.innerHTML = "No orders yet";
 } else {
-
   orders.forEach(order => {
     let div = document.createElement("div");
-    div.className = "order";
 
     let html = "<strong>Time:</strong> " + order.time + "<br>";
-    html += "<strong>Total:</strong> ₹" + order.total + "<br><br>";
+    html += "<strong>Total:</strong> ₹" + order.total + "<br>";
 
     order.items.forEach(item => {
       html += item.name + " x " + item.qty + "<br>";
@@ -64,7 +40,6 @@ if(orders.length === 0){
     div.innerHTML = html;
     container.appendChild(div);
   });
-
 }
 
 function goBack(){
