@@ -2,18 +2,93 @@
 <html>
 <head>
   <title>Payment</title>
+
+  <style>
+    body {
+      margin:0;
+      font-family:sans-serif;
+      background:linear-gradient(135deg,#667eea,#764ba2);
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      height:100vh;
+    }
+
+    .box {
+      background:white;
+      padding:30px;
+      border-radius:15px;
+      width:320px;
+      box-shadow:0 10px 25px rgba(0,0,0,0.2);
+    }
+
+    h2 {
+      text-align:center;
+      margin-bottom:20px;
+    }
+
+    input {
+      width:100%;
+      padding:10px;
+      margin:8px 0;
+      border-radius:8px;
+      border:1px solid #ccc;
+      font-size:14px;
+    }
+
+    button {
+      width:100%;
+      padding:12px;
+      background:#28a745;
+      color:white;
+      border:none;
+      border-radius:8px;
+      font-size:16px;
+      cursor:pointer;
+      margin-top:10px;
+    }
+
+    button:hover {
+      background:#218838;
+    }
+
+    .card-icons {
+      display:flex;
+      justify-content:center;
+      gap:10px;
+      margin-bottom:10px;
+      font-size:22px;
+    }
+
+    .secure {
+      text-align:center;
+      font-size:12px;
+      color:gray;
+      margin-top:10px;
+    }
+  </style>
 </head>
 
 <body>
 
-<h2>Payment Page</h2>
+<div class="box">
 
-<input placeholder="Card Number"><br><br>
-<input placeholder="Name"><br><br>
-<input placeholder="Expiry"><br><br>
-<input placeholder="CVV"><br><br>
+  <h2>💳 Payment</h2>
 
-<button onclick="pay()">Pay Now</button>
+  <div class="card-icons">
+    💳 💰 🏦
+  </div>
+
+  <input type="text" placeholder="Card Number">
+  <input type="text" placeholder="Card Holder Name">
+  <input type="text" placeholder="Expiry Date (MM/YY)">
+  <input type="password" placeholder="CVV">
+
+  <button onclick="pay()">Pay Now</button>
+
+  <div class="secure">🔒 Secure Payment</div>
+
+</div>
 
 <script type="module">
 
@@ -22,7 +97,6 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/fi
 
 let currentUser;
 
-// check manual login
 let testUser = localStorage.getItem("testUser");
 
 if(testUser){
@@ -42,7 +116,6 @@ function pay(){
     return;
   }
 
-  // 🔥 USER BASED ORDERS
   let key = currentUser.email + "_orders";
 
   let orders = JSON.parse(localStorage.getItem(key)) || [];
@@ -54,11 +127,10 @@ function pay(){
 
   localStorage.setItem(key, JSON.stringify(orders));
 
-  // clear cart
   localStorage.removeItem("checkoutCart");
   localStorage.removeItem(currentUser.email + "_cart");
 
-  alert("Payment Successful!");
+  alert("✅ Payment Successful!");
 
   window.location.href = "order.html";
 }
