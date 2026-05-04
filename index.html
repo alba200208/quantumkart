@@ -2,23 +2,89 @@
 <html>
 <head>
   <title>Login</title>
+
+  <style>
+    body {
+      font-family: sans-serif;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      height:100vh;
+      background:#f1f3f6;
+    }
+
+    .box {
+      background:white;
+      padding:25px;
+      border-radius:10px;
+      text-align:center;
+      width:250px;
+    }
+
+    input {
+      width:100%;
+      padding:8px;
+      margin:10px 0;
+    }
+
+    button {
+      width:100%;
+      padding:10px;
+      margin-top:10px;
+      background:orange;
+      border:none;
+      cursor:pointer;
+    }
+
+    .google {
+      background:#4285F4;
+      color:white;
+    }
+  </style>
 </head>
 
-<body style="display:flex;justify-content:center;align-items:center;height:100vh;font-family:sans-serif;">
+<body>
 
-<button onclick="login()">Login with Google</button>
+<div class="box">
+
+  <h2>Login</h2>
+
+  <!-- Manual Login -->
+  <input type="text" id="email" placeholder="Enter test email">
+  <button onclick="manualLogin()">Login (Test Mode)</button>
+
+  <hr>
+
+  <!-- Google Login -->
+  <button class="google" onclick="googleLogin()">Login with Google</button>
+
+</div>
 
 <script type="module">
 
 import { loginWithGoogle } from "./firebase.js";
 
-function login(){
+function googleLogin(){
   loginWithGoogle().then(() => {
+    localStorage.removeItem("testUser");
     window.location.href = "home.html";
   });
 }
 
-window.login = login;
+function manualLogin(){
+  let email = document.getElementById("email").value;
+
+  if(email.trim() === ""){
+    alert("Enter email");
+    return;
+  }
+
+  localStorage.setItem("testUser", email);
+  window.location.href = "home.html";
+}
+
+window.googleLogin = googleLogin;
+window.manualLogin = manualLogin;
 
 </script>
 
