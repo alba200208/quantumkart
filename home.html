@@ -79,13 +79,13 @@
   <h2>🛒 QuantumKart</h2>
   <div>
     <span id="userEmail"></span>
+    <button onclick="goOrders()">Orders</button>
     <button onclick="logout()">Logout</button>
   </div>
 </header>
 
 <div class="container">
 
-  <!-- PRODUCTS -->
   <div class="products">
 
     <div class="card">
@@ -111,7 +111,6 @@
 
   </div>
 
-  <!-- CART -->
   <div class="cart">
     <h3>Cart</h3>
     <ul id="cartList"></ul>
@@ -148,12 +147,8 @@ function saveCart(user){
 
 function addToCart(name, price){
   let item = cart.find(p => p.name === name);
-
-  if(item){
-    item.qty++;
-  } else {
-    cart.push({name, price, qty:1});
-  }
+  if(item){ item.qty++; }
+  else { cart.push({name, price, qty:1}); }
 
   saveCart(auth.currentUser);
   displayCart();
@@ -161,10 +156,7 @@ function addToCart(name, price){
 
 function changeQty(index, change){
   cart[index].qty += change;
-
-  if(cart[index].qty <= 0){
-    cart.splice(index,1);
-  }
+  if(cart[index].qty <= 0){ cart.splice(index,1); }
 
   saveCart(auth.currentUser);
   displayCart();
@@ -173,20 +165,17 @@ function changeQty(index, change){
 function displayCart(){
   let list = document.getElementById("cartList");
   let total = 0;
-
   list.innerHTML = "";
 
   cart.forEach((item, index) => {
     total += item.price * item.qty;
 
     let li = document.createElement("li");
-
     li.innerHTML = `
       ${item.name} - ₹${item.price} x ${item.qty}
       <button class="qty-btn" onclick="changeQty(${index}, -1)">-</button>
       <button class="qty-btn" onclick="changeQty(${index}, 1)">+</button>
     `;
-
     list.appendChild(li);
   });
 
@@ -203,6 +192,10 @@ function buyNow(){
   window.location.href = "payment.html";
 }
 
+function goOrders(){
+  window.location.href = "order.html";
+}
+
 function logout(){
   logoutUser().then(() => {
     window.location.href = "index.html";
@@ -212,6 +205,7 @@ function logout(){
 window.addToCart = addToCart;
 window.changeQty = changeQty;
 window.buyNow = buyNow;
+window.goOrders = goOrders;
 window.logout = logout;
 
 </script>
