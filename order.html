@@ -1,49 +1,63 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>My Orders</title>
+  <title>Orders</title>
 </head>
 
-<body style="font-family:sans-serif; padding:20px;">
+<body>
 
-<h1>📦 My Orders</h1>
-<div id="ordersList"></div>
+<h2>Your Orders</h2>
+<ul id="orders"></ul>
 
-<button onclick="goBack()">Back</button>
+<script type="module">
 
-<script>
+import { auth } from "./firebase.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-let user = JSON.parse(localStorage.getItem("checkoutCart")) || [];
-let email = "";
+let currentUser;
 
-if(localStorage.length > 0){
-  email = Object.keys(localStorage).find(k => k.includes("@") && k.includes("_orders"));
-}
+let testUser = localStorage.getItem("testUser");
 
-let orders = JSON.parse(localStorage.getItem(email)) || [];
-
-let container = document.getElementById("ordersList");
-
-if(orders.length === 0){
-  container.innerHTML = "No orders yet";
+if(testUser){
+  currentUser = { email: testUser };
+  loadOrders();
 } else {
-  orders.forEach(order => {
-    let div = document.createElement("div");
-
-    let html = "<strong>Time:</strong> " + order.time + "<br>";
-    html += "<strong>Total:</strong> ₹" + order.total + "<br>";
-
-    order.items.forEach(item => {
-      html += item.name + " x " + item.qty + "<br>";
-    });
-
-    div.innerHTML = html;
-    container.appendChild(div);
+  onAuthStateChanged(auth, (user)=>{
+    currentUser = user;
+    loadOrders();
   });
 }
 
-function goBack(){
-  window.location.href = "home.html";
+function loadOrders(){
+
+  let list = document.getElementById("orders");
+
+  // 🔥 USER BASED KEY
+  let key = currentUser.email + "_orders";
+
+  let orders = JSON.parse(localStorage.getItem(key)) || [];
+
+  list.innerHTML = "";
+
+  if(orders.length === 0){
+    list.innerHTML = "<p>No orders yet</p>";
+    return;
+  }
+
+  orders.forEach(order => {
+
+    let li = document.createElement("li");
+
+    let items = order.items.map(i => i.name + " x " + i.qty).join(", ");
+
+    li.innerHTML = `
+      ${items} <br>
+      <small>${order.date}</small>
+      <hr>
+    `;
+
+    list.appendChild(li);
+  });
 }
 
 </script>
