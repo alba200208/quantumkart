@@ -2,52 +2,44 @@
 <html>
 <head>
   <title>Payment - QuantumKart</title>
-
   <style>
-    body{
+    body {
       font-family: Arial;
-      display:flex;
-      justify-content:center;
-      align-items:center;
-      height:100vh;
-      background:#f2f2f2;
+      background: #f5f5f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
     }
-
-    .box{
-      background:white;
-      padding:30px;
-      border-radius:10px;
-      box-shadow:0 0 10px rgba(0,0,0,0.2);
-      width:320px;
-      text-align:center;
+    .box {
+      background: white;
+      padding: 25px;
+      border-radius: 10px;
+      width: 320px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.2);
     }
-
-    h2{
-      margin-bottom:10px;
+    h2 {
+      text-align: center;
     }
-
-    input{
-      width:100%;
-      padding:10px;
-      margin:8px 0;
-      font-size:16px;
-      border-radius:5px;
-      border:1px solid #ccc;
+    input {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      border-radius: 5px;
+      border: 1px solid #ccc;
     }
-
-    button{
-      width:100%;
-      padding:12px;
-      font-size:16px;
-      background:#28a745;
-      color:white;
-      border:none;
-      border-radius:5px;
-      cursor:pointer;
+    button {
+      width: 100%;
+      padding: 10px;
+      background: green;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
     }
-
-    button:hover{
-      background:#218838;
+    button:hover {
+      background: darkgreen;
     }
   </style>
 </head>
@@ -56,69 +48,51 @@
 
 <div class="box">
   <h2>💳 Payment</h2>
-  <h3 id="total"></h3>
+
+  <p><b>Total: ₹<span id="totalAmount">0</span></b></p>
 
   <input placeholder="Card Number">
   <input placeholder="Card Holder Name">
-  <input placeholder="MM/YY">
+  <input placeholder="Expiry (MM/YY)">
   <input placeholder="CVV">
 
   <button onclick="pay()">Pay Now</button>
 </div>
 
 <script>
+  let user = localStorage.getItem("user");
+  let cart = JSON.parse(localStorage.getItem("cart_" + user)) || [];
 
-let user = localStorage.getItem("user");
-let cart = JSON.parse(localStorage.getItem("cart_"+user)) || [];
+  let total = 0;
+  cart.forEach(item => total += item.price * item.qty);
 
-let total = 0;
-cart.forEach(item=>{
-  total += item.price * item.qty;
-});
+  document.getElementById("totalAmount").innerText = total;
 
-document.getElementById("total").innerText = "Total: ₹" + total;
+  function pay() {
+    if(cart.length === 0){
+      alert("Cart empty!");
+      return;
+    }
 
+    let orders = JSON.parse(localStorage.getItem("orders_" + user)) || [];
 
-function pay(){
+    let order = {
+      items: cart,
+      total: total,
+      date: new Date().toLocaleString()
+    };
 
-  if(cart.length === 0){
-    alert("Cart empty!");
-    return;
+    orders.push(order);
+
+    localStorage.setItem("orders_" + user, JSON.stringify(orders));
+
+    // clear cart
+    localStorage.removeItem("cart_" + user);
+
+    alert("Payment Successful 🎉");
+
+    window.location.href = "order.html";
   }
-
-  // 👉 TIME + DATE
-  let now = new Date();
-  let date = now.toLocaleDateString();
-  let time = now.toLocaleTimeString();
-
-  // 👉 FORMAT ITEMS
-  let itemsText = cart.map(i => i.name + " x " + i.qty).join(", ");
-
-  // 👉 ORDER OBJECT
-  let order = {
-    items: itemsText,
-    amount: total,
-    date: date,
-    time: time
-  };
-
-  // 👉 GET OLD ORDERS
-  let orders = JSON.parse(localStorage.getItem("orders_"+user)) || [];
-
-  // 👉 ADD NEW ORDER
-  orders.push(order);
-
-  // 👉 SAVE BACK
-  localStorage.setItem("orders_"+user, JSON.stringify(orders));
-
-  // 👉 CLEAR CART
-  localStorage.removeItem("cart_"+user);
-
-  alert("Payment Successful ✅");
-
-  window.location.href = "order.html";
-}
-
 </script>
 
 </body>
