@@ -2,90 +2,49 @@
 <html>
 <head>
   <title>Payment</title>
-
-  <style>
-    body {
-      font-family: sans-serif;
-      background: #f1f3f6;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
-
-    .box {
-      background: white;
-      padding: 25px;
-      border-radius: 10px;
-      width: 300px;
-    }
-
-    input {
-      width: 100%;
-      padding: 8px;
-      margin: 8px 0;
-    }
-
-    button {
-      width: 100%;
-      padding: 10px;
-      background: green;
-      color: white;
-      border: none;
-      cursor: pointer;
-      margin-top: 10px;
-    }
-  </style>
 </head>
 
-<body>
+<body style="font-family:sans-serif; display:flex;justify-content:center;align-items:center;height:100vh;">
 
-<div class="box">
+<div>
   <h2>💳 Payment</h2>
-  <p id="totalAmount"></p>
+  <p id="total"></p>
 
-  <input type="text" placeholder="Card Number">
-  <input type="text" placeholder="Name on Card">
-  <input type="text" placeholder="Expiry">
-  <input type="text" placeholder="CVV">
+  <input placeholder="Card"><br>
+  <input placeholder="Name"><br>
+  <input placeholder="Expiry"><br>
+  <input placeholder="CVV"><br>
 
-  <button onclick="payNow()">Pay Now</button>
+  <button onclick="pay()">Pay</button>
 </div>
 
 <script>
 
-let user = localStorage.getItem("user");
 let cart = JSON.parse(localStorage.getItem("checkoutCart")) || [];
-
 let total = 0;
-cart.forEach(item => {
-  total += item.price * item.qty;
-});
 
-document.getElementById("totalAmount").innerText = "Total: ₹" + total;
+cart.forEach(i => total += i.price * i.qty);
+document.getElementById("total").innerText = "Total: ₹" + total;
 
-function payNow() {
+function pay(){
 
-  if(cart.length === 0){
-    alert("No items!");
-    return;
-  }
+  let emailKey = Object.keys(localStorage).find(k => k.includes("_cart"));
+  let userEmail = emailKey.replace("_cart","");
 
-  let orders = JSON.parse(localStorage.getItem(user + "_orders")) || [];
+  let orders = JSON.parse(localStorage.getItem(userEmail + "_orders")) || [];
 
   orders.push({
     items: cart,
-    time: new Date().toLocaleString(),
-    total: total
+    total: total,
+    time: new Date().toLocaleString()
   });
 
-  localStorage.setItem(user + "_orders", JSON.stringify(orders));
+  localStorage.setItem(userEmail + "_orders", JSON.stringify(orders));
 
   localStorage.removeItem("checkoutCart");
-  localStorage.removeItem(user + "_cart");
+  localStorage.removeItem(userEmail + "_cart");
 
-  alert("Payment Successful 🎉");
-
+  alert("Payment success 🎉");
   window.location.href = "order.html";
 }
 
