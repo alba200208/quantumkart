@@ -55,6 +55,20 @@
       background:orange;
       border:none;
       cursor:pointer;
+      border-radius:5px;
+    }
+
+    .qty-btn {
+      margin:0 5px;
+      padding:3px 8px;
+      background:#ddd;
+    }
+
+    .buy {
+      width:100%;
+      background:green;
+      color:white;
+      margin-top:10px;
     }
   </style>
 </head>
@@ -71,7 +85,9 @@
 
 <div class="container">
 
+  <!-- PRODUCTS -->
   <div class="products">
+
     <div class="card">
       <img src="https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400">
       <h3>T-Shirt</h3>
@@ -92,12 +108,15 @@
       <p>₹2500</p>
       <button onclick="addToCart('Shoes',2500)">Add</button>
     </div>
+
   </div>
 
+  <!-- CART -->
   <div class="cart">
     <h3>Cart</h3>
     <ul id="cartList"></ul>
     <h4 id="total">Total: ₹0</h4>
+    <button class="buy" onclick="buyNow()">Buy Now</button>
   </div>
 
 </div>
@@ -140,21 +159,48 @@ function addToCart(name, price){
   displayCart();
 }
 
+function changeQty(index, change){
+  cart[index].qty += change;
+
+  if(cart[index].qty <= 0){
+    cart.splice(index,1);
+  }
+
+  saveCart(auth.currentUser);
+  displayCart();
+}
+
 function displayCart(){
   let list = document.getElementById("cartList");
   let total = 0;
 
   list.innerHTML = "";
 
-  cart.forEach(item => {
+  cart.forEach((item, index) => {
     total += item.price * item.qty;
 
     let li = document.createElement("li");
-    li.innerText = item.name + " x " + item.qty;
+
+    li.innerHTML = `
+      ${item.name} - ₹${item.price} x ${item.qty}
+      <button class="qty-btn" onclick="changeQty(${index}, -1)">-</button>
+      <button class="qty-btn" onclick="changeQty(${index}, 1)">+</button>
+    `;
+
     list.appendChild(li);
   });
 
   document.getElementById("total").innerText = "Total: ₹" + total;
+}
+
+function buyNow(){
+  if(cart.length === 0){
+    alert("Cart empty!");
+    return;
+  }
+
+  localStorage.setItem("checkoutCart", JSON.stringify(cart));
+  window.location.href = "payment.html";
 }
 
 function logout(){
@@ -164,6 +210,8 @@ function logout(){
 }
 
 window.addToCart = addToCart;
+window.changeQty = changeQty;
+window.buyNow = buyNow;
 window.logout = logout;
 
 </script>
