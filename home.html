@@ -2,123 +2,30 @@
 <html>
 <head>
   <title>QuantumKart Pro</title>
-
-  <style>
-    body { font-family: sans-serif; margin:0; background:#f1f3f6; }
-
-    header {
-      background:#232f3e;
-      color:white;
-      padding:15px;
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-    }
-
-    .container {
-      display:flex;
-      padding:20px;
-      gap:20px;
-    }
-
-    .products {
-      flex:2;
-      display:grid;
-      grid-template-columns:repeat(3,1fr);
-      gap:20px;
-    }
-
-    .card {
-      background:white;
-      padding:15px;
-      border-radius:10px;
-      text-align:center;
-    }
-
-    img {
-      width:100%;
-      height:180px;
-      object-fit:cover;
-      border-radius:10px;
-    }
-
-    .cart {
-      flex:1;
-      background:white;
-      padding:15px;
-      border-radius:10px;
-    }
-
-    button {
-      padding:8px;
-      margin-top:10px;
-      background:orange;
-      border:none;
-      cursor:pointer;
-      border-radius:5px;
-    }
-
-    .qty-btn {
-      margin:0 5px;
-      padding:3px 8px;
-      background:#ddd;
-    }
-
-    .buy {
-      width:100%;
-      background:green;
-      color:white;
-      margin-top:10px;
-    }
-  </style>
 </head>
 
 <body>
 
-<header>
-  <h2>🛒 QuantumKart</h2>
-  <div>
-    <span id="userEmail"></span>
-    <button onclick="goOrders()">Orders</button>
-    <button onclick="logout()">Logout</button>
-  </div>
-</header>
+<h2>🛒 QuantumKart</h2>
 
-<div class="container">
-
-  <div class="products">
-
-    <div class="card">
-      <img src="https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400">
-      <h3>T-Shirt</h3>
-      <p>₹500</p>
-      <button onclick="addToCart('T-Shirt',500)">Add</button>
-    </div>
-
-    <div class="card">
-      <img src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400">
-      <h3>Watch</h3>
-      <p>₹1500</p>
-      <button onclick="addToCart('Watch',1500)">Add</button>
-    </div>
-
-    <div class="card">
-      <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400">
-      <h3>Shoes</h3>
-      <p>₹2500</p>
-      <button onclick="addToCart('Shoes',2500)">Add</button>
-    </div>
-
-  </div>
-
-  <div class="cart">
-    <h3>Cart</h3>
-    <ul id="cartList"></ul>
-    <h4 id="total">Total: ₹0</h4>
-    <button class="buy" onclick="buyNow()">Buy Now</button>
-  </div>
-
+<div>
+  <span id="userEmail"></span>
+  <button onclick="goOrders()">Orders</button>
+  <button onclick="logout()">Logout</button>
 </div>
+
+<hr>
+
+<div>
+  <button onclick="addToCart('T-Shirt',500)">T-Shirt ₹500</button><br>
+  <button onclick="addToCart('Watch',1500)">Watch ₹1500</button><br>
+  <button onclick="addToCart('Shoes',2500)">Shoes ₹2500</button>
+</div>
+
+<h3>Cart</h3>
+<ul id="cartList"></ul>
+<p id="total"></p>
+<button onclick="buyNow()">Buy Now</button>
 
 <script type="module">
 
@@ -126,56 +33,61 @@ import { auth, logoutUser } from "./firebase.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 let cart = [];
+let currentUser = null;
 
-onAuthStateChanged(auth, (user) => {
-  if(user){
-    document.getElementById("userEmail").innerText = user.email;
+// Check manual login first
+let testUser = localStorage.getItem("testUser");
 
-    let saved = localStorage.getItem(user.email + "_cart");
-    cart = saved ? JSON.parse(saved) : [];
+if(testUser){
+  currentUser = { email: testUser };
+  startApp(currentUser);
+} else {
 
-    displayCart();
+  onAuthStateChanged(auth, (user) => {
+    if(user){
+      currentUser = user;
+      startApp(user);
+    } else {
+      window.location.href = "index.html";
+    }
+  });
 
-  } else {
-    window.location.href = "index.html";
-  }
-});
+}
 
-function saveCart(user){
-  localStorage.setItem(user.email + "_cart", JSON.stringify(cart));
+function startApp(user){
+  document.getElementById("userEmail").innerText = user.email;
+
+  let saved = localStorage.getItem(user.email + "_cart");
+  cart = saved ? JSON.parse(saved) : [];
+
+  displayCart();
+}
+
+function saveCart(){
+  localStorage.setItem(currentUser.email + "_cart", JSON.stringify(cart));
 }
 
 function addToCart(name, price){
   let item = cart.find(p => p.name === name);
-  if(item){ item.qty++; }
-  else { cart.push({name, price, qty:1}); }
 
-  saveCart(auth.currentUser);
-  displayCart();
-}
+  if(item) item.qty++;
+  else cart.push({name, price, qty:1});
 
-function changeQty(index, change){
-  cart[index].qty += change;
-  if(cart[index].qty <= 0){ cart.splice(index,1); }
-
-  saveCart(auth.currentUser);
+  saveCart();
   displayCart();
 }
 
 function displayCart(){
   let list = document.getElementById("cartList");
   let total = 0;
+
   list.innerHTML = "";
 
-  cart.forEach((item, index) => {
+  cart.forEach((item) => {
     total += item.price * item.qty;
 
     let li = document.createElement("li");
-    li.innerHTML = `
-      ${item.name} - ₹${item.price} x ${item.qty}
-      <button class="qty-btn" onclick="changeQty(${index}, -1)">-</button>
-      <button class="qty-btn" onclick="changeQty(${index}, 1)">+</button>
-    `;
+    li.innerText = item.name + " x " + item.qty;
     list.appendChild(li);
   });
 
@@ -183,11 +95,6 @@ function displayCart(){
 }
 
 function buyNow(){
-  if(cart.length === 0){
-    alert("Cart empty!");
-    return;
-  }
-
   localStorage.setItem("checkoutCart", JSON.stringify(cart));
   window.location.href = "payment.html";
 }
@@ -197,13 +104,13 @@ function goOrders(){
 }
 
 function logout(){
+  localStorage.removeItem("testUser");
   logoutUser().then(() => {
     window.location.href = "index.html";
   });
 }
 
 window.addToCart = addToCart;
-window.changeQty = changeQty;
 window.buyNow = buyNow;
 window.goOrders = goOrders;
 window.logout = logout;
