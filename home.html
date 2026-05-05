@@ -1,230 +1,143 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>QuantumKart Pro</title>
+  <title>QuantumKart</title>
 
   <style>
-    body { font-family:sans-serif; margin:0; background:#f1f3f6; }
+    body { font-family: Arial; padding: 20px; }
 
-    header {
-      background:#232f3e;
-      color:white;
-      padding:15px;
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-    }
-
-    .container {
-      display:flex;
-      padding:20px;
-      gap:20px;
-    }
-
-    .products {
-      flex:2;
-      display:grid;
-      grid-template-columns:repeat(3,1fr);
-      gap:20px;
-    }
-
-    .card {
-      background:white;
-      padding:15px;
-      border-radius:10px;
-      text-align:center;
-      box-shadow:0 2px 8px rgba(0,0,0,0.1);
-    }
-
-    img {
-      width:100%;
-      height:180px;
-      object-fit:cover;
-      border-radius:10px;
-    }
-
-    .cart {
-      flex:1;
-      background:white;
-      padding:15px;
-      border-radius:10px;
+    .product {
+      border: 1px solid #ccc;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 8px;
     }
 
     button {
-      padding:8px;
-      margin-top:10px;
-      background:orange;
-      border:none;
-      cursor:pointer;
-      border-radius:5px;
+      padding: 5px 10px;
+      margin-top: 5px;
+      cursor: pointer;
     }
 
-    .qty-btn {
-      margin:0 5px;
-      padding:3px 8px;
-      background:#ddd;
-    }
-
-    .buy {
-      width:100%;
-      background:green;
-      color:white;
-      margin-top:10px;
+    .cart {
+      margin-top: 20px;
+      border-top: 2px solid black;
+      padding-top: 10px;
     }
   </style>
 </head>
 
 <body>
 
-<header>
-  <h2>🛒 QuantumKart</h2>
-  <div>
-    <span id="userEmail"></span>
-    <button onclick="goOrders()">Orders</button>
-    <button onclick="logout()">Logout</button>
-  </div>
-</header>
+<h1>🛒 QuantumKart</h1>
 
-<div class="container">
+<p id="userText"></p>
 
-  <div class="products">
+<h3>Products</h3>
 
-    <div class="card">
-      <img src="https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400">
-      <h3>T-Shirt</h3>
-      <p>₹500</p>
-      <button onclick="addToCart('T-Shirt',500)">Add to Cart</button>
-    </div>
-
-    <div class="card">
-      <img src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400">
-      <h3>Watch</h3>
-      <p>₹1500</p>
-      <button onclick="addToCart('Watch',1500)">Add to Cart</button>
-    </div>
-
-    <div class="card">
-      <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400">
-      <h3>Shoes</h3>
-      <p>₹2500</p>
-      <button onclick="addToCart('Shoes',2500)">Add to Cart</button>
-    </div>
-
-  </div>
-
-  <div class="cart">
-    <h3>Cart</h3>
-    <ul id="cartList"></ul>
-    <h4 id="total">Total: ₹0</h4>
-    <button class="buy" onclick="buyNow()">Buy Now</button>
-  </div>
-
+<div class="product">
+  <h4>Shoes ₹2500</h4>
+  <button onclick="add('Shoes',2500)">Add to Cart</button>
 </div>
 
-<script type="module">
+<div class="product">
+  <h4>T-Shirt ₹500</h4>
+  <button onclick="add('T-Shirt',500)">Add to Cart</button>
+</div>
 
-import { auth, logoutUser } from "./firebase.js";
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+<div class="product">
+  <h4>Watch ₹1500</h4>
+  <button onclick="add('Watch',1500)">Add to Cart</button>
+</div>
 
-let cart = [];
-let currentUser = null;
+<div class="cart">
+  <h3>Cart</h3>
+  <div id="cartItems"></div>
+  <h4>Total: ₹<span id="total">0</span></h4>
+  <button onclick="buy()">Buy Now</button>
+</div>
 
-// manual login check
-let testUser = localStorage.getItem("testUser");
+<button onclick="window.location.href='order.html'">Orders</button>
+<button onclick="logout()">Logout</button>
 
-if(testUser){
-  currentUser = { email: testUser };
-  startApp();
-} else {
-  onAuthStateChanged(auth, (user) => {
-    if(user){
-      currentUser = user;
-      startApp();
-    } else {
-      window.location.href = "index.html";
-    }
-  });
+<script>
+let user = localStorage.getItem("user");
+
+if(!user){
+  window.location.href = "index.html";
 }
 
-function startApp(){
-  document.getElementById("userEmail").innerText = currentUser.email;
+document.getElementById("userText").innerText = "Logged in as: " + user;
 
-  let saved = localStorage.getItem(currentUser.email + "_cart");
-  cart = saved ? JSON.parse(saved) : [];
-
-  displayCart();
-}
+let cart = JSON.parse(localStorage.getItem("cart_" + user)) || [];
 
 function saveCart(){
-  localStorage.setItem(currentUser.email + "_cart", JSON.stringify(cart));
+  localStorage.setItem("cart_" + user, JSON.stringify(cart));
 }
 
-function addToCart(name, price){
+function add(name, price){
   let item = cart.find(p => p.name === name);
 
-  if(item) item.qty++;
-  else cart.push({name, price, qty:1});
+  if(item){
+    item.qty++;
+  } else {
+    cart.push({name, price, qty:1});
+  }
 
   saveCart();
-  displayCart();
+  render();
 }
 
-function changeQty(index, change){
-  cart[index].qty += change;
-  if(cart[index].qty <= 0) cart.splice(index,1);
+function changeQty(name, change){
+  let item = cart.find(p => p.name === name);
+
+  if(item){
+    item.qty += change;
+
+    if(item.qty <= 0){
+      cart = cart.filter(p => p.name !== name);
+    }
+  }
 
   saveCart();
-  displayCart();
+  render();
 }
 
-function displayCart(){
-  let list = document.getElementById("cartList");
+function render(){
+  let html = "";
   let total = 0;
 
-  list.innerHTML = "";
+  cart.forEach(p => {
+    total += p.price * p.qty;
 
-  cart.forEach((item, index) => {
-    total += item.price * item.qty;
-
-    let li = document.createElement("li");
-    li.innerHTML = `
-      ${item.name} - ₹${item.price} x ${item.qty}
-      <button class="qty-btn" onclick="changeQty(${index}, -1)">-</button>
-      <button class="qty-btn" onclick="changeQty(${index}, 1)">+</button>
+    html += `
+      <div>
+        ${p.name} ₹${p.price} x ${p.qty}
+        <button onclick="changeQty('${p.name}',1)">+</button>
+        <button onclick="changeQty('${p.name}',-1)">-</button>
+      </div>
     `;
-    list.appendChild(li);
   });
 
-  document.getElementById("total").innerText = "Total: ₹" + total;
+  document.getElementById("cartItems").innerHTML = html;
+  document.getElementById("total").innerText = total;
 }
 
-function buyNow(){
+function buy(){
   if(cart.length === 0){
     alert("Cart empty!");
     return;
   }
 
-  localStorage.setItem("checkoutCart", JSON.stringify(cart));
   window.location.href = "payment.html";
 }
 
-function goOrders(){
-  window.location.href = "order.html";
-}
-
 function logout(){
-  localStorage.removeItem("testUser");
-  logoutUser().then(() => {
-    window.location.href = "index.html";
-  });
+  localStorage.removeItem("user");
+  window.location.href = "index.html";
 }
 
-window.addToCart = addToCart;
-window.changeQty = changeQty;
-window.buyNow = buyNow;
-window.goOrders = goOrders;
-window.logout = logout;
-
+render();
 </script>
 
 </body>
