@@ -1,45 +1,44 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Payment - QuantumKart</title>
+  <title>Payment</title>
+
   <style>
     body {
       font-family: Arial;
-      background: #f5f5f5;
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
+      background: #f5f5f5;
     }
+
     .box {
       background: white;
-      padding: 25px;
+      padding: 20px;
       border-radius: 10px;
-      width: 320px;
+      width: 300px;
+      text-align: center;
       box-shadow: 0 0 10px rgba(0,0,0,0.2);
     }
-    h2 {
-      text-align: center;
-    }
+
     input {
-      width: 100%;
+      width: 90%;
       padding: 10px;
       margin: 8px 0;
       border-radius: 5px;
       border: 1px solid #ccc;
     }
+
     button {
-      width: 100%;
       padding: 10px;
+      width: 100%;
       background: green;
       color: white;
       border: none;
       border-radius: 5px;
       cursor: pointer;
       font-size: 16px;
-    }
-    button:hover {
-      background: darkgreen;
     }
   </style>
 </head>
@@ -48,51 +47,57 @@
 
 <div class="box">
   <h2>💳 Payment</h2>
-
-  <p><b>Total: ₹<span id="totalAmount">0</span></b></p>
+  <h3>Total: ₹<span id="total">0</span></h3>
 
   <input placeholder="Card Number">
-  <input placeholder="Card Holder Name">
-  <input placeholder="Expiry (MM/YY)">
+  <input placeholder="Name on Card">
+  <input placeholder="Expiry">
   <input placeholder="CVV">
 
   <button onclick="pay()">Pay Now</button>
 </div>
 
 <script>
-  let user = localStorage.getItem("user");
-  let cart = JSON.parse(localStorage.getItem("cart_" + user)) || [];
+let user = localStorage.getItem("user");
 
-  let total = 0;
-  cart.forEach(item => total += item.price * item.qty);
+if(!user){
+  window.location.href = "index.html";
+}
 
-  document.getElementById("totalAmount").innerText = total;
+// ✅ SAME KEY USE HO RAHA HAI
+let cart = JSON.parse(localStorage.getItem("cart_" + user)) || [];
 
-  function pay() {
-    if(cart.length === 0){
-      alert("Cart empty!");
-      return;
-    }
+let total = 0;
 
-    let orders = JSON.parse(localStorage.getItem("orders_" + user)) || [];
+cart.forEach(p => {
+  total += p.price * p.qty;
+});
 
-    let order = {
-      items: cart,
-      total: total,
-      date: new Date().toLocaleString()
-    };
+document.getElementById("total").innerText = total;
 
-    orders.push(order);
-
-    localStorage.setItem("orders_" + user, JSON.stringify(orders));
-
-    // clear cart
-    localStorage.removeItem("cart_" + user);
-
-    alert("Payment Successful 🎉");
-
-    window.location.href = "order.html";
+function pay(){
+  if(cart.length === 0){
+    alert("Cart empty!");
+    return;
   }
+
+  let orders = JSON.parse(localStorage.getItem("orders_" + user)) || [];
+
+  orders.push({
+    items: cart,
+    total: total,
+    date: new Date().toLocaleString()
+  });
+
+  localStorage.setItem("orders_" + user, JSON.stringify(orders));
+
+  // cart clear
+  localStorage.removeItem("cart_" + user);
+
+  alert("Payment Successful!");
+
+  window.location.href = "order.html";
+}
 </script>
 
 </body>
